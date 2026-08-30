@@ -15,6 +15,13 @@ export const authService = {
     });
   },
 
+  async loginWithGoogle(data) {
+    return await apiRequest('/api/auth/google', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
   async getMe() {
     return await apiRequest('/api/auth/me', {
       method: 'GET'

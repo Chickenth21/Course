@@ -46,6 +46,15 @@ export function AuthProvider({ children }) {
     return userData;
   };
 
+  const loginWithGoogle = async (googleProfile) => {
+    const res = await authService.loginWithGoogle(googleProfile);
+    const { user: userData, token: jwtToken } = res.data;
+    localStorage.setItem('auth_token', jwtToken);
+    setToken(jwtToken);
+    setUser(userData);
+    return userData;
+  };
+
   const logout = () => {
     localStorage.removeItem('auth_token');
     setToken(null);
@@ -65,6 +74,7 @@ export function AuthProvider({ children }) {
         isLoading,
         login,
         register,
+        loginWithGoogle,
         logout,
         updateUserProfile
       }}

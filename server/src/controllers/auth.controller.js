@@ -28,6 +28,19 @@ export const login = async (req, res) => {
   }
 };
 
+export const googleAuth = async (req, res) => {
+  try {
+    const { email, fullName, avatarUrl, targetLevel } = req.body;
+    if (!email) {
+      return errorResponse(res, 'Email là bắt buộc', 400);
+    }
+    const result = await authService.continueWithGoogle({ email, fullName, avatarUrl, targetLevel });
+    return successResponse(res, result, 'Đăng nhập với Google thành công', 200);
+  } catch (error) {
+    return errorResponse(res, error.message, error.statusCode || 500);
+  }
+};
+
 export const getMe = async (req, res) => {
   try {
     const user = await authService.getMe(req.user.id);

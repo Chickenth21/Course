@@ -66,6 +66,40 @@ export const authService = {
     };
   },
 
+  async continueWithGoogle({ email, fullName, avatarUrl, targetLevel }) {
+    if (!email) {
+      const error = new Error('Thiếu thông tin email từ Google');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    let user = await userRepository.findByEmail(email);
+
+    if (!user) {
+      // Auto-create user for Google sign in
+      const randomPassword = Math.random().toString(36).slice(-12) + Date.now();
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(randomPassword, salt);
+
+      user = await userRepository.create({
+        email,
+        passwordHash,
+        fullName: fullName || email.split('@')[0],
+        avatarUrl: avatarUrl || null,
+        currentLevel: 'A1',
+        targetLevel: targetLevel || 'B2'
+      });
+    }
+
+    const token = this.generateToken(user);
+    const { password_hash, ...userWithoutPassword } = user;
+
+    return {
+      user: userWithoutPassword,
+      token
+    };
+  },
+
   async getMe(userId) {
     const user = await userRepository.findById(userId);
     if (!user) {
