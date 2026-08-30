@@ -1,0 +1,17 @@
+{
+  "name": "course-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-Powered English Learning Platform",
+  "scripts": {
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"blue.bold,green.bold\" \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "build:client": "npm --prefix client run build",
+    "build": "npm run build:client",
+    "install:all": "npm install && npm --prefix server install && npm --prefix client install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
