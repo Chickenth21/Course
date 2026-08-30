@@ -6,6 +6,10 @@ import Register from './pages/Register.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Assessment from './pages/Assessment.jsx';
 import AssessmentResult from './pages/AssessmentResult.jsx';
+import LearningPath from './pages/LearningPath.jsx';
+import Courses from './pages/Courses.jsx';
+import CourseDetail from './pages/CourseDetail.jsx';
+import LessonView from './pages/LessonView.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 export default function App() {
@@ -36,6 +40,38 @@ export default function App() {
           element={
             <ProtectedRoute>
               <AssessmentResult />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/learning-path"
+          element={
+            <ProtectedRoute>
+              <LearningPath />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/courses"
+          element={
+            <ProtectedRoute>
+              <Courses />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/courses/:id"
+          element={
+            <ProtectedRoute>
+              <CourseDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lessons/:id"
+          element={
+            <ProtectedRoute>
+              <LessonView />
             </ProtectedRoute>
           }
         />

@@ -15,7 +15,9 @@ import {
   CheckCircle2,
   BrainCircuit,
   Compass,
-  Clock
+  Clock,
+  Layers,
+  CircleDashed
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -29,7 +31,17 @@ export default function Dashboard() {
     retry: 1
   });
 
+  // Fetch learning path summary
+  const { data: pathData } = useQuery({
+    queryKey: ['dashboard-learning-path'],
+    queryFn: () => apiRequest('/api/learning-path'),
+    retry: 1
+  });
+
   const courses = coursesData?.data || [];
+  const learningPath = pathData?.data;
+  const pathItems = learningPath?.items || [];
+  const completedPathItems = pathItems.filter((i) => i.status === 'completed').length;
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
@@ -82,6 +94,41 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Learning Path Summary Widget */}
+        <section className="relative overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/40 via-slate-900/80 to-slate-900/60 p-6 md:p-8 shadow-xl">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0 mt-1">
+                <Compass className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300">
+                    Lộ trình AI Cá nhân hóa
+                  </span>
+                  <span className="text-xs text-slate-400">
+                    Đã hoàn thành {completedPathItems}/{pathItems.length} bước
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-slate-100">
+                  {learningPath?.summary ? 'Lộ trình phát triển năng lực tiếng Anh' : 'Tạo lộ trình học tập tối ưu cùng AI'}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed">
+                  {learningPath?.summary || 'AI Gemini sẽ tổng hợp điểm số và tạo ra giáo trình học tập dành riêng cho bạn.'}
+                </p>
+              </div>
+            </div>
+
+            <Link
+              to="/learning-path"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all hover:scale-105 shrink-0"
+            >
+              <span>Xem Chi Tiết Lộ Trình</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </section>
 

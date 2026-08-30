@@ -6,6 +6,9 @@ import dbRouter from './routes/db.route.js';
 import authRouter from './routes/auth.route.js';
 import assessmentRouter from './routes/assessment.route.js';
 import courseRouter from './routes/course.route.js';
+import lessonRouter from './routes/lesson.route.js';
+import exerciseRouter from './routes/exercise.route.js';
+import learningPathRouter from './routes/learningPath.route.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 
 const app = express();
@@ -26,6 +29,9 @@ app.use('/api/db', dbRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/assessments', assessmentRouter);
 app.use('/api/courses', courseRouter);
+app.use('/api/lessons', lessonRouter);
+app.use('/api/exercises', exerciseRouter);
+app.use('/api/learning-path', learningPathRouter);
 
 // 404 Handler
 app.use('*', (_req, res) => {

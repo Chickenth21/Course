@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Sparkles, BookOpen, Layers, Globe, LogIn, UserPlus, LogOut, User, LayoutDashboard } from 'lucide-react';
+import { Sparkles, BookOpen, Layers, Globe, LogIn, UserPlus, LogOut, User, LayoutDashboard, Compass } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -34,21 +34,49 @@ export default function Header() {
 
         {/* Navigation & Actions */}
         <div className="flex items-center gap-2 sm:gap-4">
-          <nav className="hidden md:flex items-center gap-2">
-            <Link
-              to="/#architecture"
-              className="text-xs sm:text-sm font-medium text-slate-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-800/60 transition-colors flex items-center gap-1.5"
-            >
-              <Layers className="w-4 h-4 text-indigo-400" />
-              {t('navArchitecture')}
-            </Link>
-            <Link
-              to="/#roadmap"
-              className="text-xs sm:text-sm font-medium text-slate-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-800/60 transition-colors flex items-center gap-1.5"
-            >
-              <BookOpen className="w-4 h-4 text-violet-400" />
-              {t('navRoadmap')}
-            </Link>
+          <nav className="hidden md:flex items-center gap-1.5">
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  className="text-xs sm:text-sm font-medium text-slate-300 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-800/60 transition-colors flex items-center gap-1.5"
+                >
+                  <LayoutDashboard className="w-4 h-4 text-indigo-400" />
+                  <span>{t('navDashboard')}</span>
+                </Link>
+                <Link
+                  to="/learning-path"
+                  className="text-xs sm:text-sm font-medium text-slate-300 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-800/60 transition-colors flex items-center gap-1.5"
+                >
+                  <Compass className="w-4 h-4 text-violet-400" />
+                  <span>Lộ trình AI</span>
+                </Link>
+                <Link
+                  to="/courses"
+                  className="text-xs sm:text-sm font-medium text-slate-300 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-800/60 transition-colors flex items-center gap-1.5"
+                >
+                  <BookOpen className="w-4 h-4 text-emerald-400" />
+                  <span>Khóa học</span>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/#architecture"
+                  className="text-xs sm:text-sm font-medium text-slate-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-800/60 transition-colors flex items-center gap-1.5"
+                >
+                  <Layers className="w-4 h-4 text-indigo-400" />
+                  {t('navArchitecture')}
+                </Link>
+                <Link
+                  to="/#roadmap"
+                  className="text-xs sm:text-sm font-medium text-slate-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-800/60 transition-colors flex items-center gap-1.5"
+                >
+                  <BookOpen className="w-4 h-4 text-violet-400" />
+                  {t('navRoadmap')}
+                </Link>
+              </>
+            )}
           </nav>
 
           {/* Language Switcher */}
@@ -73,8 +101,7 @@ export default function Header() {
                 to="/dashboard"
                 className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs font-semibold transition-colors"
               >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">{user?.full_name || t('navDashboard')}</span>
+                <span className="hidden sm:inline">{user?.full_name || 'Học viên'}</span>
                 <span className="px-1.5 py-0.2 rounded bg-indigo-500/30 text-indigo-200 text-[10px]">
                   {user?.current_level || 'A1'}
                 </span>
