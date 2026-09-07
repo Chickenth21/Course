@@ -9,6 +9,7 @@ import courseRouter from './routes/course.route.js';
 import lessonRouter from './routes/lesson.route.js';
 import exerciseRouter from './routes/exercise.route.js';
 import learningPathRouter from './routes/learningPath.route.js';
+import logRouter from './routes/log.route.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 
 const app = express();
@@ -32,6 +33,7 @@ app.use('/api/courses', courseRouter);
 app.use('/api/lessons', lessonRouter);
 app.use('/api/exercises', exerciseRouter);
 app.use('/api/learning-path', learningPathRouter);
+app.use('/api/logs', logRouter);
 
 // 404 Handler
 app.use('*', (_req, res) => {

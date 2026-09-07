@@ -4,7 +4,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LanguageProvider } from './context/LanguageContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import App from './App.jsx';
+import { initGlobalClientLogging } from './services/loggerService.js';
 import './index.css';
+
+// Initialize error tracking to Discord
+initGlobalClientLogging();
 
 const queryClient = new QueryClient({
   defaultOptions: {

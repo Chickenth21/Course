@@ -16,5 +16,10 @@ export const config = {
   // Gemini AI Configuration
   gemini: {
     apiKey: process.env.GEMINI_API_KEY || ''
+  },
+
+  // Discord Logging Configuration
+  discord: {
+    webhookUrl: process.env.DISCORD_WEBHOOK_URL || ''
   }
 };
