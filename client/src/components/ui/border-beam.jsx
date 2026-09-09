@@ -1,58 +1,37 @@
-import { motion } from "motion/react";
-
-import { cn } from "@/lib/utils"
+import React from "react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 export const BorderBeam = ({
   className,
-  size = 50,
-  delay = 0,
   duration = 6,
-  colorFrom = "#ffaa40",
-  colorTo = "#9c40ff",
-  transition,
-  style,
-  reverse = false,
-  initialOffset = 0,
-  borderWidth = 1
+  colorFrom = "#6366f1",
+  colorTo = "#a855f7",
+  borderWidth = 1.5,
 }) => {
   return (
     <div
-      className="pointer-events-none absolute inset-0 rounded-[inherit] border-(length:--border-beam-width) border-transparent mask-[linear-gradient(transparent,transparent),linear-gradient(#000,#000)] mask-intersect [mask-clip:padding-box,border-box]"
-      style={
-        {
-          "--border-beam-width": `${borderWidth}px`
-        }
-      }
+      className="pointer-events-none absolute inset-0 rounded-[inherit] overflow-hidden"
+      style={{ padding: `${borderWidth}px` }}
     >
       <motion.div
         className={cn(
-          "absolute aspect-square",
-          "bg-linear-to-l from-(--color-from) via-(--color-to) to-transparent",
+          "absolute -inset-[150%] opacity-90",
           className
         )}
-        style={
-          {
-            width: size,
-            offsetPath: `rect(0 auto auto 0 round ${size}px)`,
-            "--color-from": colorFrom,
-            "--color-to": colorTo,
-            ...style
-          }
-        }
-        initial={{ offsetDistance: `${initialOffset}%` }}
+        style={{
+          background: `conic-gradient(from 0deg at 50% 50%, transparent 0deg, ${colorFrom} 45deg, ${colorTo} 90deg, transparent 135deg)`,
+        }}
         animate={{
-          offsetDistance: reverse
-            ? [`${100 - initialOffset}%`, `${-initialOffset}%`]
-            : [`${initialOffset}%`, `${100 + initialOffset}%`],
+          rotate: [0, 360],
         }}
         transition={{
+          duration,
           repeat: Infinity,
           ease: "linear",
-          duration,
-          delay: -delay,
-          ...transition,
         }}
       />
+      <div className="absolute inset-[1px] rounded-[inherit] bg-slate-950/80 backdrop-blur-xl -z-0 pointer-events-none" />
     </div>
   );
-}
+};

@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
-import { useInView, useMotionValue, useSpring } from "motion/react"
-
-import { cn } from "@/lib/utils"
+import { useInView, useMotionValue, useSpring } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 export function NumberTicker({
   value,
@@ -12,29 +11,29 @@ export function NumberTicker({
   decimalPlaces = 0,
   ...props
 }) {
-  const ref = useRef(null)
-  const motionValue = useMotionValue(direction === "down" ? value : startValue)
+  const ref = useRef(null);
+  const motionValue = useMotionValue(direction === "down" ? value : startValue);
   const springValue = useSpring(motionValue, {
-    damping: 60,
-    stiffness: 100,
-  })
-  const isInView = useInView(ref, { once: true, margin: "0px" })
+    damping: 30,
+    stiffness: 80,
+  });
+  const isInView = useInView(ref, { once: true, margin: "0px" });
 
   useEffect(() => {
-    let timer = null
+    let timer = null;
 
     if (isInView) {
       timer = setTimeout(() => {
-        motionValue.set(direction === "down" ? startValue : value)
-      }, delay * 1000)
+        motionValue.set(direction === "down" ? startValue : value);
+      }, delay * 1000);
     }
 
     return () => {
       if (timer !== null) {
-        clearTimeout(timer)
+        clearTimeout(timer);
       }
-    }
-  }, [motionValue, isInView, delay, value, direction, startValue])
+    };
+  }, [motionValue, isInView, delay, value, direction, startValue]);
 
   useEffect(
     () =>
@@ -43,22 +42,22 @@ export function NumberTicker({
           ref.current.textContent = Intl.NumberFormat("en-US", {
             minimumFractionDigits: decimalPlaces,
             maximumFractionDigits: decimalPlaces,
-          }).format(Number(latest.toFixed(decimalPlaces)))
+          }).format(Number(latest.toFixed(decimalPlaces)));
         }
       }),
     [springValue, decimalPlaces]
-  )
+  );
 
   return (
     <span
       ref={ref}
       className={cn(
-        "inline-block tracking-wider text-black tabular-nums dark:text-white",
+        "inline-block tracking-wider tabular-nums font-mono",
         className
       )}
       {...props}
     >
       {startValue}
     </span>
-  )
+  );
 }

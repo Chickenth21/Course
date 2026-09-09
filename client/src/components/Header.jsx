@@ -10,7 +10,8 @@ import {
   UserPlus,
   LogOut,
   LayoutDashboard,
-  Compass
+  Compass,
+  GraduationCap
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -47,16 +48,17 @@ export default function Header() {
           className="flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-xl"
           aria-label="EngVantage AI Trang chủ"
         >
-          <div className="relative w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
-            <Sparkles className="w-5 h-5 text-white animate-pulse" />
-            <div className="absolute inset-0 rounded-xl border border-white/20 pointer-events-none" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-amber-500 p-[1px] shadow-lg shadow-indigo-950 group-hover:scale-105 transition-transform">
+            <div className="w-full h-full bg-[#0b1120] rounded-[11px] flex items-center justify-center">
+              <GraduationCap className="w-5 h-5 text-amber-400" />
+            </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
-              {t('brandName')}
+            <span className="font-extrabold text-lg tracking-tight text-white flex items-center gap-1.5">
+              EngVantage <span className="text-amber-400 text-sm font-semibold">AI</span>
             </span>
-            <Badge variant="outline" className="hidden sm:inline-flex bg-indigo-500/10 text-indigo-400 border-indigo-500/30 text-[10px] py-0 px-2">
-              {t('phase1Badge')}
+            <Badge variant="outline" className="hidden sm:inline-flex bg-amber-500/10 text-amber-400 border-amber-500/30 text-[10px] py-0 px-2 font-medium">
+              CEFR Adaptive
             </Badge>
           </div>
         </Link>

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { lessonService } from '../services/lessonService.js';
 import { exerciseService } from '../services/exerciseService.js';
 import Header from '../components/Header.jsx';
+import Footer from '../components/Footer.jsx';
 import PageTransition from '../components/PageTransition.jsx';
 import { Card } from '../components/ui/card.jsx';
 import { Badge } from '../components/ui/badge.jsx';
@@ -102,7 +103,7 @@ export default function LessonView() {
         [exerciseId]: res.data
       }));
     } catch (err) {
-      alert(err.message || 'Lỗi khi kiểm tra câu trả lời');
+      console.error(err);
     } finally {
       setCheckingExerciseId(null);
     }
@@ -110,10 +111,10 @@ export default function LessonView() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400">
+      <div className="min-h-screen flex items-center justify-center bg-[#070b16] text-slate-400">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm font-medium">Đang tải bài học...</span>
+          <div className="w-10 h-10 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-xs font-mono">Đang tải giáo trình...</span>
         </div>
       </div>
     );
@@ -121,62 +122,63 @@ export default function LessonView() {
 
   if (isError || !lesson) {
     return (
-      <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+      <div className="min-h-screen flex flex-col bg-[#070b16] text-slate-100">
         <Header />
-        <main className="flex-1 flex items-center justify-center p-6 text-center space-y-4">
-          <Card className="p-8 max-w-md bg-slate-900 border-white/10">
-            <GraduationCap className="w-10 h-10 text-slate-400 mx-auto mb-2" />
+        <main className="flex-1 flex items-center justify-center p-6">
+          <div className="p-8 text-center space-y-4 max-w-md rounded-2xl bg-slate-900 border border-slate-800">
             <h2 className="text-xl font-bold text-white">Không tìm thấy bài học</h2>
-            <Link to="/courses" className="mt-4 inline-block">
-              <Button className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold">
-                Quay lại danh sách khóa học
-              </Button>
-            </Link>
-          </Card>
+            <p className="text-xs text-slate-400">Bài học có thể chưa được kích hoạt hoặc không tồn tại.</p>
+            <Button
+              onClick={() => navigate('/courses')}
+              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs cursor-pointer"
+            >
+              Về Danh Sách Khóa Học
+            </Button>
+          </div>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[#070b16] text-slate-100 selection:bg-amber-500 selection:text-slate-950 font-sans">
       <Header />
 
       <PageTransition className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
-        {/* Back Link */}
+        {/* Back navigation */}
         <Button
-          onClick={() => navigate(-1)}
           variant="ghost"
+          onClick={() => navigate('/courses')}
           size="sm"
-          className="text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5 cursor-pointer -ml-2"
+          className="text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-900 cursor-pointer -ml-2"
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
-          <span>Quay Lại Khóa Học</span>
+          <span>Quay Lại Thư Viện Khóa Học</span>
         </Button>
 
         {/* Lesson Top Header Banner */}
-        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-indigo-950/70 via-slate-900/90 to-purple-950/50 p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-4">
+        <section className="relative overflow-hidden rounded-3xl border border-slate-800 bg-[#0d1424] p-6 sm:p-8 shadow-2xl space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 uppercase text-[10px] font-bold">
+                <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30 uppercase text-[10px] font-bold font-mono">
                   CEFR {lesson.level}
                 </Badge>
-                <span className="text-xs text-slate-400 flex items-center gap-1">
+                <span className="text-xs text-slate-400 flex items-center gap-1 font-mono">
                   <Clock className="w-3.5 h-3.5" />
                   {lesson.duration_minutes || 15} phút
                 </span>
                 {isCompleted && (
-                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px]">
+                  <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30 text-[10px]">
                     <CheckCircle2 className="w-3 h-3 mr-1" />
                     Đã hoàn thành
                   </Badge>
                 )}
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-white">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
                 {lesson.title}
               </h1>
-              <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed">
                 {lesson.description}
               </p>
             </div>
@@ -184,27 +186,27 @@ export default function LessonView() {
             <Button
               onClick={() => completeMutation.mutate()}
               disabled={isCompleted || completeMutation.isPending}
-              className={`rounded-2xl font-bold text-xs shadow-lg transition-all flex items-center gap-2 shrink-0 h-11 px-5 cursor-pointer ${
+              className={`rounded-xl font-bold text-xs shadow-md transition-all flex items-center gap-2 shrink-0 h-11 px-5 cursor-pointer ${
                 isCompleted
                   ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 cursor-default'
-                  : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-emerald-500/20 hover:scale-105 active:scale-95'
+                  : 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-amber-500/10 active:scale-95'
               }`}
             >
               <Check className="w-4 h-4" />
-              <span>{isCompleted ? 'Đã Hoàn Thành' : completeMutation.isPending ? 'Đang lưu...' : 'Hoàn Thành Bài Học'}</span>
+              <span>{isCompleted ? 'Đã Hoàn Thành' : completeMutation.isPending ? 'Đang lưu...' : 'Đánh Dấu Hoàn Thành'}</span>
             </Button>
           </div>
 
           {/* Objectives */}
           {objectives.length > 0 && (
-            <div className="pt-4 border-t border-white/10 space-y-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+            <div className="pt-4 border-t border-slate-800 space-y-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400 block">
                 🎯 Mục tiêu bài học:
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {objectives.map((obj, idx) => (
                   <div key={idx} className="flex items-center gap-2 text-xs text-slate-300">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                     <span>{obj}</span>
                   </div>
                 ))}
@@ -215,32 +217,32 @@ export default function LessonView() {
 
         {/* Tab Navigation with shadcn Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-          <TabsList className="bg-slate-900/80 border border-white/10 p-1 rounded-2xl h-auto gap-1">
+          <TabsList className="bg-slate-900 border border-slate-800 p-1 rounded-xl h-auto gap-1">
             <TabsTrigger
               value="theory"
-              className="rounded-xl py-2 px-4 text-xs font-bold data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400 cursor-pointer"
+              className="rounded-lg py-2 px-4 text-xs font-bold data-[state=active]:bg-amber-500 data-[state=active]:text-slate-950 text-slate-400 cursor-pointer transition-all"
             >
               <BookOpen className="w-4 h-4 mr-2" />
-              <span>Lý Thuyết & Ví Dụ</span>
+              <span>Lý Thuyết & Phản Xạ</span>
             </TabsTrigger>
 
             {vocabulary.length > 0 && (
               <TabsTrigger
                 value="vocabulary"
-                className="rounded-xl py-2 px-4 text-xs font-bold data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400 cursor-pointer"
+                className="rounded-lg py-2 px-4 text-xs font-bold data-[state=active]:bg-amber-500 data-[state=active]:text-slate-950 text-slate-400 cursor-pointer transition-all"
               >
                 <Volume2 className="w-4 h-4 mr-2" />
-                <span>Từ Vựng ({vocabulary.length})</span>
+                <span>Từ Vựng & Âm Vị ({vocabulary.length})</span>
               </TabsTrigger>
             )}
 
             {exercises.length > 0 && (
               <TabsTrigger
                 value="exercises"
-                className="rounded-xl py-2 px-4 text-xs font-bold data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400 cursor-pointer"
+                className="rounded-lg py-2 px-4 text-xs font-bold data-[state=active]:bg-amber-500 data-[state=active]:text-slate-950 text-slate-400 cursor-pointer transition-all"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                <span>Bài Tập ({exercises.length})</span>
+                <span>Thực Hành Động ({exercises.length})</span>
               </TabsTrigger>
             )}
           </TabsList>
@@ -487,6 +489,8 @@ export default function LessonView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Footer />
     </div>
   );
 }

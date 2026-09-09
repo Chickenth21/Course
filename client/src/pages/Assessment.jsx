@@ -136,31 +136,32 @@ export default function Assessment() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[#070b16] text-slate-100 selection:bg-amber-500 selection:text-slate-950 font-sans">
       <Header />
 
       <PageTransition className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex flex-col justify-between space-y-8">
         {/* Test Top Bar */}
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
             <div>
-              <Badge variant="outline" className="bg-indigo-500/10 text-indigo-400 border-indigo-500/30 uppercase tracking-wider text-[10px]">
-                Placement Assessment
-              </Badge>
-              <h1 className="text-xl sm:text-2xl font-black text-white mt-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-bold uppercase tracking-wider">
+                <BrainCircuit className="w-3 h-3" />
+                <span>Diagnostic Assessment</span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-white mt-1">
                 {test.title}
               </h1>
             </div>
 
             {/* Timer & Count */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-white/10 font-mono text-sm font-bold text-amber-400 shadow-sm">
+              <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 font-mono text-xs sm:text-sm font-bold text-amber-400 shadow-sm">
                 <Clock className="w-4 h-4" />
                 <span>{formatTime(timeLeft)}</span>
               </div>
               <Button
                 onClick={() => setShowConfirmModal(true)}
-                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all cursor-pointer active:scale-95"
+                className="bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/10 transition-all cursor-pointer active:scale-95"
               >
                 <Send className="w-3.5 h-3.5 mr-1.5" />
                 <span>Nộp Bài ({answeredCount}/{questions.length})</span>
@@ -171,8 +172,8 @@ export default function Assessment() {
           {/* Progress Bar */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs text-slate-400 font-medium">
-              <span>Tiến độ: <strong className="text-white">{answeredCount}</strong> / {questions.length} câu đã trả lời</span>
-              <span className="text-indigo-400 font-bold">{progressPercentage}%</span>
+              <span>Tiến độ: <strong className="text-white font-mono">{answeredCount}</strong> / {questions.length} câu</span>
+              <span className="text-amber-400 font-bold font-mono">{progressPercentage}%</span>
             </div>
             <Progress value={progressPercentage} className="h-2 bg-slate-900" />
           </div>
@@ -183,21 +184,21 @@ export default function Assessment() {
           {currentQuestion && (
             <motion.div
               key={currentQuestion.id || currentIndex}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="relative rounded-3xl border border-white/10 bg-slate-900/70 p-6 sm:p-10 shadow-2xl backdrop-blur-xl space-y-8"
+              className="relative rounded-2xl border border-slate-800 bg-[#0d1424] p-6 sm:p-10 shadow-2xl space-y-8"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 rounded-xl bg-slate-800 border border-white/10 text-slate-200 font-mono text-xs font-bold">
+                  <span className="px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 font-mono text-xs font-bold">
                     Câu {currentIndex + 1} / {questions.length}
                   </span>
-                  <Badge variant="outline" className="bg-indigo-500/15 text-indigo-300 border-indigo-500/30 text-xs">
+                  <Badge className="bg-indigo-500/15 text-indigo-300 border-indigo-500/30 text-xs">
                     {currentQuestion.skill}
                   </Badge>
-                  <Badge variant="outline" className="bg-white/5 text-slate-300 border-white/10 text-xs">
+                  <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30 text-xs font-mono">
                     CEFR {currentQuestion.difficulty}
                   </Badge>
                 </div>
@@ -218,18 +219,18 @@ export default function Assessment() {
                     <button
                       key={idx}
                       onClick={() => handleSelectOption(option)}
-                      className={`flex items-center justify-between p-4 sm:p-5 rounded-2xl border text-left text-sm font-medium transition-all cursor-pointer active:scale-[0.99] ${
+                      className={`flex items-center justify-between p-4 sm:p-5 rounded-xl border text-left text-sm font-medium transition-all cursor-pointer active:scale-[0.99] ${
                         isSelected
-                          ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-xl shadow-indigo-500/10 ring-1 ring-indigo-500'
-                          : 'bg-slate-950/60 border-white/10 text-slate-300 hover:border-white/20 hover:bg-slate-900/80'
+                          ? 'bg-amber-500/10 border-amber-500 text-white shadow-lg shadow-amber-500/5 ring-1 ring-amber-500'
+                          : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-900'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-8 h-8 rounded-xl flex items-center justify-center font-mono text-xs font-bold shrink-0 transition-colors ${
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center font-mono text-xs font-bold shrink-0 transition-colors ${
                             isSelected
-                              ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
-                              : 'bg-slate-800 text-slate-400 border border-white/10'
+                              ? 'bg-amber-500 text-slate-950 font-black shadow-md'
+                              : 'bg-slate-800 text-slate-400 border border-slate-700'
                           }`}
                         >
                           {String.fromCharCode(65 + idx)}
@@ -238,7 +239,7 @@ export default function Assessment() {
                       </div>
 
                       {isSelected && (
-                        <CheckCircle2 className="w-5 h-5 text-indigo-400 shrink-0" />
+                        <CheckCircle2 className="w-5 h-5 text-amber-400 shrink-0" />
                       )}
                     </button>
                   );
@@ -249,12 +250,12 @@ export default function Assessment() {
         </AnimatePresence>
 
         {/* Footer Navigation */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-800">
           <Button
             onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
             disabled={currentIndex === 0}
             variant="outline"
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl border-white/10 bg-slate-900 text-slate-300 disabled:opacity-40 text-xs font-semibold cursor-pointer"
+            className="w-full sm:w-auto px-5 py-2 rounded-xl border-slate-800 bg-slate-900 text-slate-300 disabled:opacity-40 text-xs font-semibold cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             <span>Câu Trước</span>
@@ -269,12 +270,12 @@ export default function Assessment() {
                 <button
                   key={idx}
                   onClick={() => setCurrentIndex(idx)}
-                  className={`w-8 h-8 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-7 h-7 rounded-lg font-mono text-xs font-bold transition-all cursor-pointer ${
                     isCurrent
-                      ? 'bg-indigo-600 text-white ring-2 ring-indigo-400 shadow-md scale-110'
+                      ? 'bg-amber-500 text-slate-950 ring-2 ring-amber-400 shadow-md scale-105'
                       : isAnswered
                       ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                      : 'bg-slate-900 text-slate-400 border border-white/10 hover:border-white/20 hover:text-slate-200'
+                      : 'bg-slate-900 text-slate-400 border border-slate-800 hover:border-slate-700 hover:text-slate-200'
                   }`}
                 >
                   {idx + 1}
@@ -286,7 +287,7 @@ export default function Assessment() {
           {currentIndex < questions.length - 1 ? (
             <Button
               onClick={() => setCurrentIndex((prev) => Math.min(questions.length - 1, prev + 1))}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-xs font-bold shadow-md shadow-indigo-500/20 cursor-pointer active:scale-95"
+              className="w-full sm:w-auto px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/10 cursor-pointer active:scale-95"
             >
               <span>Câu Tiếp</span>
               <ChevronRight className="w-4 h-4 ml-1" />
@@ -294,7 +295,7 @@ export default function Assessment() {
           ) : (
             <Button
               onClick={() => setShowConfirmModal(true)}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-500/20 cursor-pointer active:scale-95"
+              className="w-full sm:w-auto px-6 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow-lg shadow-emerald-500/20 cursor-pointer active:scale-95"
             >
               <Send className="w-3.5 h-3.5 mr-1.5" />
               <span>Nộp Bài Thi</span>
@@ -305,16 +306,16 @@ export default function Assessment() {
 
       {/* Confirmation Dialog via shadcn */}
       <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
-        <DialogContent className="max-w-md bg-slate-900 border-white/10 text-slate-100 p-6 sm:p-8 rounded-3xl shadow-2xl">
+        <DialogContent className="max-w-md bg-[#0d1424] border-slate-800 text-slate-100 p-6 sm:p-8 rounded-2xl shadow-2xl">
           <DialogHeader className="text-center space-y-2">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mx-auto">
-              <BrainCircuit className="w-7 h-7 animate-pulse" />
+            <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mx-auto">
+              <BrainCircuit className="w-6 h-6" />
             </div>
             <DialogTitle className="text-xl font-bold text-white text-center">
               Xác Nhận Nộp Bài Thi
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm text-slate-400 text-center leading-relaxed">
-              Bạn đã hoàn thành <strong className="text-indigo-400">{answeredCount}/{questions.length}</strong> câu hỏi. AI sẽ tính toán kết quả và ước tính trình độ CEFR tương thích ngay sau khi nộp.
+              Bạn đã hoàn thành <strong className="text-amber-400 font-mono">{answeredCount}/{questions.length}</strong> câu hỏi. AI sẽ phân tích và xếp lớp CEFR ngay lập tức.
             </DialogDescription>
           </DialogHeader>
 
@@ -329,14 +330,14 @@ export default function Assessment() {
               variant="outline"
               onClick={() => setShowConfirmModal(false)}
               disabled={submitting}
-              className="flex-1 rounded-xl border-white/10 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs cursor-pointer"
+              className="flex-1 rounded-xl border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs cursor-pointer"
             >
-              Tiếp Tục Làm Bài
+              Tiếp Tục
             </Button>
             <Button
               onClick={handleSubmitTest}
               disabled={submitting}
-              className="flex-1 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 cursor-pointer active:scale-95"
+              className="flex-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/10 cursor-pointer active:scale-95"
             >
               {submitting ? 'Đang chấm điểm...' : 'Xác Nhận Nộp'}
             </Button>

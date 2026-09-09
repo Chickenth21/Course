@@ -4,9 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { courseService } from '../services/courseService.js';
 import Header from '../components/Header.jsx';
+import Footer from '../components/Footer.jsx';
 import PageTransition from '../components/PageTransition.jsx';
-import { BorderBeam } from '../components/ui/border-beam.jsx';
-import { Card } from '../components/ui/card.jsx';
 import { Badge } from '../components/ui/badge.jsx';
 import { Button } from '../components/ui/button.jsx';
 import {
@@ -35,10 +34,10 @@ export default function CourseDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400">
+      <div className="min-h-screen flex items-center justify-center bg-[#070b16] text-slate-400">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm font-medium">Đang tải thông tin khóa học...</span>
+          <div className="w-10 h-10 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-xs font-mono">Đang tải thông tin khóa học...</span>
         </div>
       </div>
     );
@@ -46,88 +45,112 @@ export default function CourseDetail() {
 
   if (isError || !course) {
     return (
-      <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+      <div className="min-h-screen flex flex-col bg-[#070b16] text-slate-100">
         <Header />
         <main className="flex-1 flex items-center justify-center p-6 text-center space-y-4">
-          <Card className="p-8 max-w-md bg-slate-900 border-white/10">
-            <GraduationCap className="w-10 h-10 text-slate-400 mx-auto mb-2" />
+          <div className="p-8 max-w-md rounded-2xl bg-slate-900 border border-slate-800">
+            <GraduationCap className="w-10 h-10 text-amber-400 mx-auto mb-2" />
             <h2 className="text-xl font-bold text-white">Không tìm thấy khóa học</h2>
             <Link to="/courses" className="mt-4 inline-block">
-              <Button className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold">
+              <Button className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs">
                 Quay lại danh sách khóa học
               </Button>
             </Link>
-          </Card>
+          </div>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[#070b16] text-slate-100 selection:bg-amber-500 selection:text-slate-950 font-sans">
       <Header />
 
-      <PageTransition className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full space-y-8">
+      <PageTransition className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
         {/* Back Link */}
-        <Link to="/courses">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5 cursor-pointer -ml-2"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            <span>Tất Cả Khóa Học</span>
-          </Button>
-        </Link>
+        <Button
+          onClick={() => navigate('/courses')}
+          variant="ghost"
+          size="sm"
+          className="text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-900 cursor-pointer -ml-2"
+        >
+          <ChevronLeft className="w-4 h-4 mr-1" />
+          <span>Quay Lại Thư Viện Khóa Học</span>
+        </Button>
 
-        {/* Course Header Banner with BorderBeam */}
-        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 p-8 sm:p-10 shadow-2xl backdrop-blur-xl space-y-4">
-          <BorderBeam size={100} duration={8} colorFrom="#6366f1" colorTo="#8b5cf6" />
-          <div className="relative z-10 space-y-3">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 uppercase text-xs font-bold">
+        {/* Course Header Banner */}
+        <section className="relative overflow-hidden rounded-3xl border border-slate-800 bg-[#0d1424] p-8 sm:p-10 shadow-2xl space-y-6">
+          <div className="space-y-4 max-w-3xl">
+            <div className="flex items-center gap-3">
+              <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30 font-bold text-xs font-mono uppercase">
                 CEFR {course.level}
               </Badge>
-              <span className="text-xs text-slate-400 font-medium">
-                {modules.length} Module &bull; {modules.reduce((acc, m) => acc + (m.lessons?.length || 0), 0)} Bài học
+              <span className="text-xs text-slate-400 font-mono flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" />
+                Học tự do theo tốc độ cá nhân
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white">
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
               {course.title}
             </h1>
 
-            <p className="text-slate-300 text-sm sm:text-base max-w-2xl leading-relaxed">
+            <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
               {course.description}
             </p>
           </div>
+
+          <div className="pt-6 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-6 text-xs text-slate-300">
+              <span className="flex items-center gap-1.5 font-medium">
+                <Layers className="w-4 h-4 text-amber-400" />
+                <span>{modules.length} Modules giáo trình</span>
+              </span>
+              <span className="flex items-center gap-1.5 font-medium">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>Khung chuẩn quốc tế CEFR</span>
+              </span>
+            </div>
+
+            {modules[0]?.lessons?.[0] && (
+              <Link to={`/lessons/${modules[0].lessons[0].id}`}>
+                <Button
+                  size="lg"
+                  className="h-11 px-6 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm shadow-md shadow-amber-500/10 transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <span>Bắt Đầu Bài Đầu Tiên</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            )}
+          </div>
         </section>
 
-        {/* Modules & Lessons Hierarchy */}
-        <section className="space-y-6">
-          <div className="border-b border-white/10 pb-3">
+        {/* Modules & Lessons Curriculum Section */}
+        <section className="space-y-4">
+          <div className="border-b border-slate-800 pb-3">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Layers className="w-5 h-5 text-indigo-400" />
-              <span>Nội Dung Khóa Học</span>
+              <Layers className="w-5 h-5 text-amber-400" />
+              <span>Nội Dung Giáo Trình</span>
             </h2>
           </div>
 
           <div className="space-y-6">
             {modules.map((module, mIdx) => (
-              <Card
+              <div
                 key={module.id || mIdx}
-                className="p-6 space-y-4 bg-slate-900/60 border-white/10 shadow-xl backdrop-blur-sm"
+                className="p-6 rounded-2xl border border-slate-800 bg-[#0d1424] space-y-4 shadow-xl"
               >
-                <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                   <div>
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-indigo-400">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400">
                       Module {module.order_index || mIdx + 1}
                     </span>
                     <h3 className="text-lg font-bold text-white mt-0.5">
                       {module.title}
                     </h3>
                   </div>
-                  <Badge variant="outline" className="text-xs text-slate-400 border-white/10">
+                  <Badge className="text-xs text-slate-400 bg-slate-900 border-slate-800 font-mono">
                     {module.lessons?.length || 0} bài học
                   </Badge>
                 </div>
@@ -138,14 +161,14 @@ export default function CourseDetail() {
                     <Link
                       key={lesson.id || lIdx}
                       to={`/lessons/${lesson.id}`}
-                      className="group flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-slate-950/60 hover:bg-slate-800/60 hover:border-indigo-500/40 transition-all duration-200 cursor-pointer"
+                      className="group flex items-center justify-between p-4 rounded-xl border border-slate-800/80 bg-slate-900/60 hover:bg-slate-800/80 hover:border-amber-500/40 transition-all duration-200 cursor-pointer"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 font-mono text-xs font-bold group-hover:bg-indigo-600 group-hover:text-white transition-colors shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-mono text-xs font-bold group-hover:bg-amber-500 group-hover:text-slate-950 transition-colors shrink-0">
                           {lesson.order_index || lIdx + 1}
                         </div>
                         <div className="space-y-0.5">
-                          <h4 className="font-bold text-sm text-slate-100 group-hover:text-indigo-300 transition-colors">
+                          <h4 className="font-bold text-sm text-slate-100 group-hover:text-amber-300 transition-colors">
                             {lesson.title}
                           </h4>
                           <p className="text-xs text-slate-400 line-clamp-1">
@@ -155,22 +178,24 @@ export default function CourseDetail() {
                       </div>
 
                       <div className="flex items-center gap-4 shrink-0">
-                        <span className="text-xs text-slate-400 hidden sm:flex items-center gap-1 font-medium">
+                        <span className="text-xs text-slate-400 hidden sm:flex items-center gap-1 font-mono">
                           <Clock className="w-3.5 h-3.5" />
                           {lesson.duration_minutes || 15} phút
                         </span>
-                        <div className="p-2 rounded-xl bg-white/5 group-hover:bg-indigo-600 text-slate-400 group-hover:text-white transition-all shadow-sm">
+                        <div className="p-2 rounded-lg bg-slate-800 group-hover:bg-amber-500 text-slate-400 group-hover:text-slate-950 transition-all shadow-sm">
                           <PlayCircle className="w-4 h-4" />
                         </div>
                       </div>
                     </Link>
                   ))}
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         </section>
       </PageTransition>
+
+      <Footer />
     </div>
   );
 }
