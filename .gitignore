@@ -1,12 +1,42 @@
+# Dependencies
 node_modules/
+/.pnp
+.pnp.js
+
+# Production builds
 dist/
+dist-ssr/
 build/
+*.local
+
+# Environment variables & secrets (Security)
 .env
 .env.local
 .env.*.local
-.DS_Store
-*.log
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.agents
+pnpm-debug.log*
+*.log
+logs/
+
+# Editor & OS files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Auto-generated Agent clones / symlinks by CLI
+.claude/
+agent/

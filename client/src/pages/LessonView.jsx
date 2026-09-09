@@ -1,9 +1,28 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { lessonService } from '../services/lessonService.js';
 import { exerciseService } from '../services/exerciseService.js';
 import Header from '../components/Header.jsx';
+import PageTransition from '../components/PageTransition.jsx';
+import { Card } from '../components/ui/card.jsx';
+import { Badge } from '../components/ui/badge.jsx';
+import { Button } from '../components/ui/button.jsx';
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent
+} from '../components/ui/tabs.jsx';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from '../components/ui/dialog.jsx';
 import {
   BookOpen,
   Volume2,
@@ -13,12 +32,11 @@ import {
   Sparkles,
   ChevronLeft,
   ArrowRight,
-  HelpCircle,
   Lightbulb,
   Check,
   Send,
   Trophy,
-  Award
+  GraduationCap
 } from 'lucide-react';
 
 export default function LessonView() {
@@ -26,11 +44,12 @@ export default function LessonView() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const [activeTab, setActiveTab] = useState('theory'); // 'theory', 'vocabulary', 'exercises'
+  const [activeTab, setActiveTab] = useState('theory');
   const [exerciseAnswers, setExerciseAnswers] = useState({});
   const [exerciseResults, setExerciseResults] = useState({});
   const [checkingExerciseId, setCheckingExerciseId] = useState(null);
   const [completedModal, setCompletedModal] = useState(false);
+  const [speakingWord, setSpeakingWord] = useState(null);
 
   // Fetch lesson details
   const { data: lessonData, isLoading, isError } = useQuery({
@@ -60,9 +79,12 @@ export default function LessonView() {
   const speakWord = (text) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
+      setSpeakingWord(text);
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'en-US';
       utterance.rate = 0.9;
+      utterance.onend = () => setSpeakingWord(null);
+      utterance.onerror = () => setSpeakingWord(null);
       window.speechSynthesis.speak(utterance);
     }
   };
@@ -90,7 +112,7 @@ export default function LessonView() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-10 h-10 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
           <span className="text-sm font-medium">Đang tải bài học...</span>
         </div>
       </div>
@@ -102,75 +124,80 @@ export default function LessonView() {
       <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
         <Header />
         <main className="flex-1 flex items-center justify-center p-6 text-center space-y-4">
-          <div>
-            <h2 className="text-xl font-bold">Không tìm thấy bài học</h2>
-            <Link to="/courses" className="mt-4 inline-block px-5 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold">
-              Quay lại danh sách khóa học
+          <Card className="p-8 max-w-md bg-slate-900 border-white/10">
+            <GraduationCap className="w-10 h-10 text-slate-400 mx-auto mb-2" />
+            <h2 className="text-xl font-bold text-white">Không tìm thấy bài học</h2>
+            <Link to="/courses" className="mt-4 inline-block">
+              <Button className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold">
+                Quay lại danh sách khóa học
+              </Button>
             </Link>
-          </div>
+          </Card>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
       <Header />
 
-      <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
+      <PageTransition className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
         {/* Back Link */}
-        <button
+        <Button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+          variant="ghost"
+          size="sm"
+          className="text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5 cursor-pointer -ml-2"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4 mr-1" />
           <span>Quay Lại Khóa Học</span>
-        </button>
+        </Button>
 
-        {/* Lesson Top Header */}
-        <section className="relative overflow-hidden rounded-3xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/60 via-slate-900/90 to-purple-950/40 p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-4">
+        {/* Lesson Top Header Banner */}
+        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-indigo-950/70 via-slate-900/90 to-purple-950/50 p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase">
+                <Badge variant="outline" className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 uppercase text-[10px] font-bold">
                   CEFR {lesson.level}
-                </span>
+                </Badge>
                 <span className="text-xs text-slate-400 flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5" />
                   {lesson.duration_minutes || 15} phút
                 </span>
                 {isCompleted && (
-                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" />
+                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px]">
+                    <CheckCircle2 className="w-3 h-3 mr-1" />
                     Đã hoàn thành
-                  </span>
+                  </Badge>
                 )}
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
+              <h1 className="text-2xl sm:text-3xl font-black text-white">
                 {lesson.title}
               </h1>
-              <p className="text-xs sm:text-sm text-slate-300">
+              <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
                 {lesson.description}
               </p>
             </div>
 
-            <button
+            <Button
               onClick={() => completeMutation.mutate()}
               disabled={isCompleted || completeMutation.isPending}
-              className={`px-5 py-3 rounded-2xl font-bold text-xs shadow-lg transition-all flex items-center gap-2 shrink-0 ${
+              className={`rounded-2xl font-bold text-xs shadow-lg transition-all flex items-center gap-2 shrink-0 h-11 px-5 cursor-pointer ${
                 isCompleted
                   ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 cursor-default'
-                  : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-emerald-500/20 hover:scale-105'
+                  : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-emerald-500/20 hover:scale-105 active:scale-95'
               }`}
             >
               <Check className="w-4 h-4" />
               <span>{isCompleted ? 'Đã Hoàn Thành' : completeMutation.isPending ? 'Đang lưu...' : 'Hoàn Thành Bài Học'}</span>
-            </button>
+            </Button>
           </div>
 
           {/* Objectives */}
           {objectives.length > 0 && (
-            <div className="pt-4 border-t border-slate-800/80 space-y-2">
+            <div className="pt-4 border-t border-white/10 space-y-2">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
                 🎯 Mục tiêu bài học:
               </span>
@@ -186,158 +213,159 @@ export default function LessonView() {
           )}
         </section>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center gap-2 border-b border-slate-800 pb-1">
-          <button
-            onClick={() => setActiveTab('theory')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-              activeTab === 'theory'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>Lý Thuyết &amp; Ví Dụ</span>
-          </button>
-
-          {vocabulary.length > 0 && (
-            <button
-              onClick={() => setActiveTab('vocabulary')}
-              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                activeTab === 'vocabulary'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-900'
-              }`}
+        {/* Tab Navigation with shadcn Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+          <TabsList className="bg-slate-900/80 border border-white/10 p-1 rounded-2xl h-auto gap-1">
+            <TabsTrigger
+              value="theory"
+              className="rounded-xl py-2 px-4 text-xs font-bold data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400 cursor-pointer"
             >
-              <Volume2 className="w-4 h-4" />
-              <span>Từ Vựng Cốt Lõi ({vocabulary.length})</span>
-            </button>
-          )}
+              <BookOpen className="w-4 h-4 mr-2" />
+              <span>Lý Thuyết & Ví Dụ</span>
+            </TabsTrigger>
 
-          {exercises.length > 0 && (
-            <button
-              onClick={() => setActiveTab('exercises')}
-              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                activeTab === 'exercises'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-900'
-              }`}
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>Bài Tập Thực Hành ({exercises.length})</span>
-            </button>
-          )}
-        </div>
+            {vocabulary.length > 0 && (
+              <TabsTrigger
+                value="vocabulary"
+                className="rounded-xl py-2 px-4 text-xs font-bold data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400 cursor-pointer"
+              >
+                <Volume2 className="w-4 h-4 mr-2" />
+                <span>Từ Vựng ({vocabulary.length})</span>
+              </TabsTrigger>
+            )}
 
-        {/* Tab 1: Theory & Examples */}
-        {activeTab === 'theory' && (
-          <div className="space-y-8">
-            {/* Explanation */}
-            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 space-y-4 shadow-xl backdrop-blur-sm">
-              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+            {exercises.length > 0 && (
+              <TabsTrigger
+                value="exercises"
+                className="rounded-xl py-2 px-4 text-xs font-bold data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400 cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                <span>Bài Tập ({exercises.length})</span>
+              </TabsTrigger>
+            )}
+          </TabsList>
+
+          {/* Tab 1: Theory & Examples */}
+          <TabsContent value="theory" className="space-y-8 mt-0 outline-none">
+            <Card className="p-6 sm:p-8 space-y-4 bg-slate-900/60 border-white/10 shadow-xl backdrop-blur-sm">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-amber-400" />
-                Kiến Thức Trọng Tâm
+                <span>Kiến Thức Trọng Tâm</span>
               </h2>
-              <div className="text-sm text-slate-300 whitespace-pre-line leading-relaxed font-sans bg-slate-950/60 p-6 rounded-2xl border border-slate-800/80">
+              <div className="text-sm text-slate-300 whitespace-pre-line leading-relaxed font-sans bg-slate-950/70 p-6 rounded-2xl border border-white/5">
                 {content.explanation || 'Nội dung giải thích đang được cập nhật.'}
               </div>
-            </div>
+            </Card>
 
             {/* Examples */}
             {examples.length > 0 && (
-              <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 space-y-4 shadow-xl backdrop-blur-sm">
-                <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+              <Card className="p-6 sm:p-8 space-y-4 bg-slate-900/60 border-white/10 shadow-xl backdrop-blur-sm">
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-indigo-400" />
-                  Ví Dụ Minh Họa
+                  <span>Ví Dụ Minh Họa</span>
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {examples.map((ex, idx) => (
-                    <div
-                      key={idx}
-                      className="p-4 rounded-2xl border border-slate-800/80 bg-slate-950/60 flex items-center justify-between gap-3 group hover:border-indigo-500/30 transition-all"
-                    >
-                      <span className="text-sm font-semibold text-slate-200">
-                        {ex}
-                      </span>
+                  {examples.map((ex, idx) => {
+                    const isSpeaking = speakingWord === ex;
+                    return (
+                      <div
+                        key={idx}
+                        className="p-4 rounded-2xl border border-white/10 bg-slate-950/60 flex items-center justify-between gap-3 group hover:border-indigo-500/40 transition-all"
+                      >
+                        <span className="text-sm font-semibold text-slate-200">
+                          {ex}
+                        </span>
+                        <button
+                          onClick={() => speakWord(ex)}
+                          className={`p-2 rounded-xl border transition-all shrink-0 cursor-pointer active:scale-95 ${
+                            isSpeaking
+                              ? 'bg-indigo-500 text-white border-indigo-400 animate-pulse'
+                              : 'bg-white/5 text-slate-400 border-white/5 hover:text-indigo-300 hover:bg-indigo-500/10'
+                          }`}
+                          title="Phát âm câu ví dụ"
+                          aria-label="Phát âm"
+                        >
+                          <Volume2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Tab 2: Vocabulary Cards */}
+          <TabsContent value="vocabulary" className="mt-0 outline-none">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {vocabulary.map((item, idx) => {
+                const isSpeaking = speakingWord === item.word;
+                return (
+                  <Card
+                    key={idx}
+                    className="p-5 space-y-3 bg-slate-900/60 border-white/10 shadow-lg hover:border-indigo-500/40 transition-all flex flex-col justify-between group"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-black text-white group-hover:text-indigo-300 transition-colors">
+                            {item.word}
+                          </h3>
+                          {item.type && (
+                            <Badge variant="outline" className="text-[10px] font-mono px-2 py-0.5 bg-indigo-500/15 text-indigo-300 border-indigo-500/30">
+                              {item.type}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-slate-300 mt-1.5 font-medium">
+                          {item.meaning}
+                        </p>
+                      </div>
+
                       <button
-                        onClick={() => speakWord(ex)}
-                        className="p-2 rounded-lg bg-slate-800/80 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors shrink-0"
-                        title="Phát âm câu ví dụ"
+                        onClick={() => speakWord(item.word)}
+                        className={`p-2.5 rounded-xl border transition-all shrink-0 cursor-pointer active:scale-95 ${
+                          isSpeaking
+                            ? 'bg-indigo-500 text-white border-indigo-400 shadow-md shadow-indigo-500/30'
+                            : 'bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600 hover:text-white border-indigo-500/30'
+                        }`}
+                        title="Nghe phát âm chuẩn"
+                        aria-label="Nghe phát âm"
                       >
                         <Volume2 className="w-4 h-4" />
                       </button>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
 
-        {/* Tab 2: Vocabulary Cards */}
-        {activeTab === 'vocabulary' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {vocabulary.map((item, idx) => (
-              <div
-                key={idx}
-                className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-3 shadow-lg hover:border-indigo-500/40 transition-all flex flex-col justify-between"
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-extrabold text-white">
-                        {item.word}
-                      </h3>
-                      {item.type && (
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                          {item.type}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-slate-300 mt-1 font-medium">
-                      {item.meaning}
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => speakWord(item.word)}
-                    className="p-2.5 rounded-xl bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600 hover:text-white border border-indigo-500/30 transition-all"
-                    title="Nghe phát âm chuẩn"
-                  >
-                    <Volume2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Tab 3: Interactive Exercises */}
-        {activeTab === 'exercises' && (
-          <div className="space-y-6">
+          {/* Tab 3: Interactive Exercises */}
+          <TabsContent value="exercises" className="space-y-6 mt-0 outline-none">
             {exercises.map((ex, idx) => {
               const result = exerciseResults[ex.id];
               const isChecking = checkingExerciseId === ex.id;
               const selectedAnswer = exerciseAnswers[ex.id];
 
               return (
-                <div
+                <Card
                   key={ex.id || idx}
-                  className={`rounded-3xl border p-6 sm:p-8 space-y-6 shadow-xl transition-all ${
+                  className={`p-6 sm:p-8 space-y-6 shadow-xl transition-all ${
                     result?.isCorrect
-                      ? 'border-emerald-500/30 bg-slate-900/60'
+                      ? 'border-emerald-500/40 bg-slate-900/80 shadow-emerald-500/5'
                       : result && !result.isCorrect
-                      ? 'border-rose-500/30 bg-slate-900/60'
-                      : 'border-slate-800 bg-slate-900/60'
+                      ? 'border-rose-500/40 bg-slate-900/80 shadow-rose-500/5'
+                      : 'border-white/10 bg-slate-900/60'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono font-bold text-slate-400">
                       Bài tập {idx + 1} &bull; {ex.skill || 'Grammar'}
                     </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 uppercase">
+                    <Badge variant="outline" className="text-[10px] font-bold px-2 py-0.5 bg-slate-800 text-slate-300 border-white/10 uppercase">
                       CEFR {ex.difficulty || 'A1'}
-                    </span>
+                    </Badge>
                   </div>
 
                   {ex.instructions && (
@@ -346,7 +374,7 @@ export default function LessonView() {
                     </p>
                   )}
 
-                  <h3 className="text-base sm:text-lg font-bold text-slate-100 leading-relaxed">
+                  <h3 className="text-base sm:text-lg font-bold text-white leading-relaxed">
                     {ex.question}
                   </h3>
 
@@ -359,10 +387,10 @@ export default function LessonView() {
                           <button
                             key={oIdx}
                             onClick={() => setExerciseAnswers({ ...exerciseAnswers, [ex.id]: opt })}
-                            className={`flex items-center gap-3 p-4 rounded-xl border text-left text-sm font-medium transition-all ${
+                            className={`flex items-center gap-3 p-4 rounded-xl border text-left text-sm font-medium transition-all cursor-pointer active:scale-[0.99] ${
                               isSelected
                                 ? 'bg-indigo-600/20 border-indigo-500 text-white ring-1 ring-indigo-500'
-                                : 'bg-slate-950/60 border-slate-800 text-slate-300 hover:border-slate-700'
+                                : 'bg-slate-950/60 border-white/10 text-slate-300 hover:border-white/20'
                             }`}
                           >
                             <span className="w-6 h-6 rounded-lg bg-slate-800 text-slate-400 font-mono text-xs flex items-center justify-center shrink-0">
@@ -380,33 +408,33 @@ export default function LessonView() {
                       placeholder="Nhập câu trả lời của bạn..."
                       value={selectedAnswer || ''}
                       onChange={(e) => setExerciseAnswers({ ...exerciseAnswers, [ex.id]: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-4 py-3 bg-slate-950/80 border border-white/10 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                     />
                   )}
 
                   {/* Check Answer Button & Result Feedback */}
-                  <div className="pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <button
+                  <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <Button
                       onClick={() => handleCheckExercise(ex.id)}
                       disabled={!selectedAnswer || isChecking}
-                      className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-1.5"
+                      className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                     >
                       <Send className="w-3.5 h-3.5" />
                       <span>{isChecking ? 'Đang kiểm tra...' : 'Kiểm Tra Đáp Án'}</span>
-                    </button>
+                    </Button>
 
                     {result && (
                       <div className="flex items-center gap-2">
                         {result.isCorrect ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20">
-                            <CheckCircle2 className="w-4 h-4" />
+                          <Badge variant="outline" className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border-emerald-500/30 px-3 py-1.5 rounded-xl">
+                            <CheckCircle2 className="w-4 h-4 mr-1.5" />
                             Chính xác!
-                          </span>
+                          </Badge>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-xs font-bold text-rose-400 bg-rose-500/10 px-3 py-1.5 rounded-xl border border-rose-500/20">
-                            <XCircle className="w-4 h-4" />
-                            Chưa đúng! Đáp án đúng: {result.correctAnswer}
-                          </span>
+                          <Badge variant="outline" className="text-xs font-bold text-rose-400 bg-rose-500/10 border-rose-500/30 px-3 py-1.5 rounded-xl">
+                            <XCircle className="w-4 h-4 mr-1.5" />
+                            Chưa đúng! Đáp án: {result.correctAnswer}
+                          </Badge>
                         )}
                       </div>
                     )}
@@ -415,48 +443,50 @@ export default function LessonView() {
                   {/* Explanation reveal */}
                   {result && result.explanation && (
                     <div className="p-4 rounded-2xl bg-indigo-950/30 border border-indigo-500/30 text-xs text-slate-300 space-y-1">
-                      <span className="font-bold text-indigo-300 block">💡 Giải thích:</span>
+                      <span className="font-bold text-indigo-300 block">💡 Giải thích chi tiết:</span>
                       <p className="leading-relaxed">{result.explanation}</p>
                     </div>
                   )}
-                </div>
+                </Card>
               );
             })}
-          </div>
-        )}
-      </main>
+          </TabsContent>
+        </Tabs>
+      </PageTransition>
 
-      {/* Completion Modal */}
-      {completedModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-md rounded-3xl border border-emerald-500/30 bg-slate-900 p-8 space-y-6 shadow-2xl text-center">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mx-auto">
-              <Trophy className="w-7 h-7" />
+      {/* Completion Modal using shadcn Dialog */}
+      <Dialog open={completedModal} onOpenChange={setCompletedModal}>
+        <DialogContent className="max-w-md bg-slate-900 border-emerald-500/30 text-slate-100 p-8 rounded-3xl shadow-2xl text-center">
+          <DialogHeader className="text-center space-y-3">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mx-auto">
+              <Trophy className="w-8 h-8 animate-bounce" />
             </div>
-            <div className="space-y-2">
-              <h3 className="text-2xl font-extrabold text-white">Xuất Sắc! 🎉</h3>
-              <p className="text-xs text-slate-300">
-                Bạn đã hoàn thành bài học <strong>"{lesson.title}"</strong>. Tiến độ học tập đã được ghi nhận tự động vào tài khoản của bạn!
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setCompletedModal(false)}
-                className="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors"
-              >
-                Ở Lại Bài Học
-              </button>
-              <button
-                onClick={() => navigate('/courses')}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-1.5"
-              >
-                <span>Tiếp Tục Học</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            <DialogTitle className="text-2xl font-extrabold text-white text-center">
+              Xuất Sắc! 🎉
+            </DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm text-slate-300 text-center leading-relaxed">
+              Bạn đã hoàn thành bài học <strong>"{lesson.title}"</strong>. Tiến độ học tập đã được ghi nhận tự động vào hồ sơ của bạn!
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex flex-row gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setCompletedModal(false)}
+              className="flex-1 rounded-xl border-white/10 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs cursor-pointer"
+            >
+              Ở Lại Bài Học
+            </Button>
+            <Button
+              onClick={() => navigate('/courses')}
+              className="flex-1 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 cursor-pointer active:scale-95"
+            >
+              <span>Tiếp Tục Học</span>
+              <ArrowRight className="w-4 h-4 ml-1.5" />
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
