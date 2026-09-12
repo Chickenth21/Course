@@ -30,6 +30,7 @@ export function AuthProvider({ children }) {
 
   const login = async (credentials) => {
     const res = await authService.login(credentials);
+    if (!res?.data?.token) throw new Error('Dữ liệu đăng nhập không hợp lệ');
     const { user: userData, token: jwtToken } = res.data;
     localStorage.setItem('auth_token', jwtToken);
     setToken(jwtToken);
@@ -39,6 +40,7 @@ export function AuthProvider({ children }) {
 
   const register = async (formData) => {
     const res = await authService.register(formData);
+    if (!res?.data?.token) throw new Error('Dữ liệu đăng ký không hợp lệ');
     const { user: userData, token: jwtToken } = res.data;
     localStorage.setItem('auth_token', jwtToken);
     setToken(jwtToken);
@@ -48,6 +50,7 @@ export function AuthProvider({ children }) {
 
   const loginWithGoogle = async (googleProfile) => {
     const res = await authService.loginWithGoogle(googleProfile);
+    if (!res?.data?.token) throw new Error('Dữ liệu Google không hợp lệ');
     const { user: userData, token: jwtToken } = res.data;
     localStorage.setItem('auth_token', jwtToken);
     setToken(jwtToken);

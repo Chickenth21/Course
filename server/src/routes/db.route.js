@@ -3,10 +3,12 @@ import { supabase } from '../config/supabase.js';
 import { courseRepository } from '../repositories/course.repository.js';
 import { assessmentRepository } from '../repositories/assessment.repository.js';
 import { successResponse, errorResponse } from '../utils/response.js';
+import { requireAuth } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
-router.get('/status', async (_req, res) => {
+// Only authenticated users can check DB status (prevents information leakage)
+router.get('/status', requireAuth, async (_req, res) => {
   if (!supabase) {
     return errorResponse(res, 'Supabase client is not connected', 503);
   }

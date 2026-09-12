@@ -1,24 +1,21 @@
-import { courseRepository } from '../repositories/course.repository.js';
+import { courseService } from '../services/course.service.js';
 import { successResponse, errorResponse } from '../utils/response.js';
 
 export const getCourses = async (_req, res) => {
   try {
-    const courses = await courseRepository.getAllCourses();
-    return successResponse(res, courses, 'Courses retrieved successfully');
+    const courses = await courseService.getAllCourses();
+    return successResponse(res, courses, 'Lấy danh sách khóa học thành công');
   } catch (error) {
-    return errorResponse(res, error.message, 500);
+    return errorResponse(res, error.message, error.statusCode || 500);
   }
 };
 
 export const getCourseById = async (req, res) => {
   try {
     const { id } = req.params;
-    const course = await courseRepository.getCourseById(id);
-    if (!course) {
-      return errorResponse(res, 'Course not found', 404);
-    }
-    return successResponse(res, course, 'Course details retrieved successfully');
+    const course = await courseService.getCourseById(id);
+    return successResponse(res, course, 'Lấy chi tiết khóa học thành công');
   } catch (error) {
-    return errorResponse(res, error.message, 500);
+    return errorResponse(res, error.message, error.statusCode || 500);
   }
 };

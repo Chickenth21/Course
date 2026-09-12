@@ -10,6 +10,7 @@ import LearningPath from './pages/LearningPath.jsx';
 import Courses from './pages/Courses.jsx';
 import CourseDetail from './pages/CourseDetail.jsx';
 import LessonView from './pages/LessonView.jsx';
+import PracticeHub from './pages/PracticeHub.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 export default function App() {
@@ -72,6 +73,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <LessonView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/practice"
+          element={
+            <ProtectedRoute>
+              <PracticeHub />
             </ProtectedRoute>
           }
         />

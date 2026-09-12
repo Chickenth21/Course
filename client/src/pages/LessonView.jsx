@@ -37,8 +37,13 @@ import {
   Check,
   Send,
   Trophy,
-  GraduationCap
+  GraduationCap,
+  PenLine,
+  Loader2,
+  RotateCcw
 } from 'lucide-react';
+import GeminiFeedbackCard from '../components/practice/GeminiFeedbackCard.jsx';
+import { practiceService } from '../services/practiceService.js';
 
 export default function LessonView() {
   const { id } = useParams();
@@ -51,6 +56,11 @@ export default function LessonView() {
   const [checkingExerciseId, setCheckingExerciseId] = useState(null);
   const [completedModal, setCompletedModal] = useState(false);
   const [speakingWord, setSpeakingWord] = useState(null);
+
+  // AI exercise state (reading_translation / writing_essay)
+  const [aiAnswers, setAiAnswers] = useState({});    // { [exerciseId]: string }
+  const [aiResults, setAiResults] = useState({});    // { [exerciseId]: evaluation }
+  const [aiSubmitting, setAiSubmitting] = useState(null); // exerciseId currently submitting
 
   // Fetch lesson details
   const { data: lessonData, isLoading, isError } = useQuery({
@@ -90,7 +100,7 @@ export default function LessonView() {
     }
   };
 
-  // Submit single exercise
+  // Submit single exercise (multiple choice / fill blank)
   const handleCheckExercise = async (exerciseId) => {
     const answer = exerciseAnswers[exerciseId];
     if (!answer) return;
@@ -106,6 +116,63 @@ export default function LessonView() {
       console.error(err);
     } finally {
       setCheckingExerciseId(null);
+    }
+  };
+
+  // Submit AI-graded exercise (reading_translation / writing_essay)
+  const handleAiSubmit = async (exercise) => {
+    const userContent = aiAnswers[exercise.id];
+    if (!userContent || !userContent.trim()) return;
+
+    // We need a topicId — use exercise id as topicId fallback
+    // The backend practice.service handles missing topic gracefully
+    // We call the appropriate endpoint based on exercise type
+    setAiSubmitting(exercise.id);
+    try {
+      let res;
+      if (exercise.type === 'reading_translation') {
+        // Build a temporary payload using the exercise data directly
+        res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/practice/submit-translation`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('auth_token')
+              ? { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
+              : {})
+          },
+          body: JSON.stringify({
+            topicId: exercise.practiceTopicId || exercise.id,
+            userTranslation: userContent,
+            // Inline fallback: pass sourceText so server can find context
+            _sourceText: exercise.question,
+            _level: exercise.difficulty || 'B1'
+          })
+        }).then(r => r.json());
+      } else {
+        res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/practice/submit-writing`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('auth_token')
+              ? { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
+              : {})
+          },
+          body: JSON.stringify({
+            topicId: exercise.practiceTopicId || exercise.id,
+            userEssay: userContent,
+            _instructions: exercise.instructions || exercise.question,
+            _level: exercise.difficulty || 'B1'
+          })
+        }).then(r => r.json());
+      }
+
+      if (res?.data?.evaluation) {
+        setAiResults(prev => ({ ...prev, [exercise.id]: res.data.evaluation }));
+      }
+    } catch (err) {
+      console.error('AI exercise submit error:', err);
+    } finally {
+      setAiSubmitting(null);
     }
   };
 
@@ -350,6 +417,98 @@ export default function LessonView() {
               const isChecking = checkingExerciseId === ex.id;
               const selectedAnswer = exerciseAnswers[ex.id];
 
+              // ── AI-Graded Exercise (reading_translation / writing_essay) ──
+              const isAiType = ex.type === 'reading_translation' || ex.type === 'writing_essay';
+              if (isAiType) {
+                const aiResult = aiResults[ex.id];
+                const isSubmitting = aiSubmitting === ex.id;
+                const userContent = aiAnswers[ex.id] || '';
+                const wordCount = userContent.trim().split(/\s+/).filter(Boolean).length;
+
+                return (
+                  <Card key={ex.id || idx} className="p-6 sm:p-8 space-y-5 border-white/10 bg-slate-900/60 shadow-xl">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {ex.type === 'reading_translation'
+                          ? <BookOpen className="w-4 h-4 text-sky-400" />
+                          : <PenLine className="w-4 h-4 text-violet-400" />
+                        }
+                        <span className="text-xs font-mono font-bold text-slate-400">
+                          Bài tập {idx + 1} &bull; {ex.type === 'reading_translation' ? 'Dịch Thuật AI' : 'Viết Luận AI'}
+                        </span>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] font-bold px-2 py-0.5 bg-slate-800 text-slate-300 border-white/10 uppercase">
+                        CEFR {ex.difficulty || 'B1'}
+                      </Badge>
+                    </div>
+
+                    {ex.instructions && (
+                      <p className="text-xs text-indigo-300 font-semibold">{ex.instructions}</p>
+                    )}
+
+                    {/* Source text / prompt */}
+                    <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/5 text-sm text-slate-200 leading-relaxed">
+                      {ex.question}
+                    </div>
+
+                    {/* User input */}
+                    {!aiResult && (
+                      <div className="space-y-3">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-wider">
+                          {ex.type === 'reading_translation' ? '✍️ Bản Dịch Của Bạn (Tiếng Việt)' : '✍️ Bài Viết Của Bạn (Tiếng Anh)'}
+                        </label>
+                        <textarea
+                          value={userContent}
+                          onChange={(e) => setAiAnswers(prev => ({ ...prev, [ex.id]: e.target.value }))}
+                          placeholder={ex.type === 'reading_translation' ? 'Nhập bản dịch tiếng Việt...' : 'Write your answer in English...'}
+                          rows={5}
+                          className="w-full px-4 py-3 bg-slate-950/80 border border-white/10 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none leading-relaxed"
+                        />
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-slate-500 font-mono">{wordCount} từ</span>
+                          <Button
+                            onClick={() => handleAiSubmit(ex)}
+                            disabled={!userContent.trim() || isSubmitting}
+                            className={`text-xs font-black px-5 py-2.5 rounded-xl shadow-md flex items-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50 ${
+                              ex.type === 'reading_translation'
+                                ? 'bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500'
+                                : 'bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500'
+                            } text-white`}
+                          >
+                            {isSubmitting
+                              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Gemini chấm bài...</>
+                              : <><Sparkles className="w-3.5 h-3.5" /> Gemini Chấm Bài</>
+                            }
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* AI Feedback */}
+                    {aiResult && (
+                      <div className="space-y-4">
+                        <GeminiFeedbackCard
+                          evaluation={aiResult}
+                          type={ex.type === 'reading_translation' ? 'translation' : 'writing'}
+                        />
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setAiResults(prev => { const n = {...prev}; delete n[ex.id]; return n; });
+                            setAiAnswers(prev => { const n = {...prev}; delete n[ex.id]; return n; });
+                          }}
+                          className="rounded-xl border-white/10 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold cursor-pointer flex items-center gap-2"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" /> Làm Lại
+                        </Button>
+                      </div>
+                    )}
+                  </Card>
+                );
+              }
+
+              // ── Standard Exercise (multiple_choice / fill_blank) ── (unchanged)
               return (
                 <Card
                   key={ex.id || idx}

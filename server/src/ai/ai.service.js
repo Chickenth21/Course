@@ -1,6 +1,13 @@
 import { ai } from '../config/gemini.js';
 import { buildLearningPathPrompt } from './prompts/learningPath.prompt.js';
 import { learningPathResponseSchema } from './schemas/learningPath.schema.js';
+import { buildTranslationPrompt, buildWritingPrompt, buildTopicGenerationPrompt } from './prompts/evaluation.prompt.js';
+import {
+  translationEvaluationSchema,
+  writingEvaluationSchema,
+  fallbackTranslationResult,
+  fallbackWritingResult
+} from './schemas/evaluation.schema.js';
 
 export const aiService = {
   /**
@@ -9,7 +16,7 @@ export const aiService = {
   async generateLearningPath({ currentLevel = 'A1', targetLevel = 'B2', skillScores = {}, weakAreas = [], strongAreas = [] }) {
     // 1. Try Gemini AI if client is available
     if (ai) {
-      const modelsToTry = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-2.5-pro'];
+      const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
       for (const modelName of modelsToTry) {
         try {
           const prompt = buildLearningPathPrompt({ currentLevel, targetLevel, skillScores, weakAreas, strongAreas });
@@ -139,5 +146,163 @@ export const aiService = {
       target_level: targetLevel,
       steps
     };
+  },
+
+  /**
+   * Evaluate a reading/translation submission using Gemini AI.
+   * Falls back to deterministic result if Gemini is unavailable.
+   */
+  async evaluateReadingTranslation({ sourceText, userTranslation, level = 'B1', referenceTranslation }) {
+    if (ai) {
+      const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+      for (const modelName of modelsToTry) {
+        try {
+          const prompt = buildTranslationPrompt({ sourceText, userTranslation, level, referenceTranslation });
+          console.log(`🤖 Gemini (${modelName}): Evaluating translation...`);
+
+          const response = await ai.models.generateContent({
+            model: modelName,
+            contents: prompt,
+            config: { responseMimeType: 'application/json' }
+          });
+
+          const rawText = response.text || '';
+          const jsonText = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          const parsedJson = JSON.parse(jsonText);
+          const validated = translationEvaluationSchema.parse(parsedJson);
+          console.log(`✅ Gemini (${modelName}): Translation evaluated — score ${validated.overallScore}`);
+          return { ...validated, isAiGraded: true };
+        } catch (error) {
+          console.warn(`⚠️ Gemini translation eval (${modelName}) failed:`, error.message);
+        }
+      }
+    } else {
+      console.warn('ℹ️ Gemini not configured — using fallback for translation evaluation.');
+    }
+
+    // Deterministic fallback
+    return { ...fallbackTranslationResult, isAiGraded: false };
+  },
+
+  /**
+   * Evaluate a writing/essay submission using Gemini AI.
+   * Falls back to deterministic result if Gemini is unavailable.
+   */
+  async evaluateWritingEssay({ topicTitle, instructions, userEssay, targetLevel = 'B1', minWords = 50, maxWords = 300 }) {
+    if (ai) {
+      const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+      for (const modelName of modelsToTry) {
+        try {
+          const prompt = buildWritingPrompt({ topicTitle, instructions, userEssay, targetLevel, minWords, maxWords });
+          console.log(`🤖 Gemini (${modelName}): Evaluating writing essay...`);
+
+          const response = await ai.models.generateContent({
+            model: modelName,
+            contents: prompt,
+            config: { responseMimeType: 'application/json' }
+          });
+
+          const rawText = response.text || '';
+          const jsonText = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          const parsedJson = JSON.parse(jsonText);
+          const validated = writingEvaluationSchema.parse(parsedJson);
+          console.log(`✅ Gemini (${modelName}): Essay evaluated — score ${validated.overallScore}, CEFR ${validated.cefrBand}`);
+          return { ...validated, isAiGraded: true };
+        } catch (error) {
+          console.warn(`⚠️ Gemini writing eval (${modelName}) failed:`, error.message);
+        }
+      }
+    } else {
+      console.warn('ℹ️ Gemini not configured — using fallback for writing evaluation.');
+    }
+
+    // Deterministic fallback with word count populated
+    const wordCount = userEssay.trim().split(/\s+/).filter(Boolean).length;
+    return { ...fallbackWritingResult, wordCount, isAiGraded: false };
+  },
+
+  /**
+   * Generate a brand-new practice topic using Gemini AI.
+   * Returns a structured topic object ready for display.
+   */
+  async generatePracticeTopic({ type, level, usedTitles = [] }) {
+    if (ai) {
+      const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+      for (const modelName of modelsToTry) {
+        try {
+          const prompt = buildTopicGenerationPrompt({ type, level, usedTitles });
+          console.log(`🤖 Gemini (${modelName}): Generating ${type} topic for level ${level}...`);
+
+          const response = await ai.models.generateContent({
+            model: modelName,
+            contents: prompt,
+            config: { responseMimeType: 'application/json' }
+          });
+
+          const rawText = response.text || '';
+          const jsonText = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          const parsed = JSON.parse(jsonText);
+
+          // Validate minimum required fields
+          if (!parsed.title || !parsed.instructions) {
+            throw new Error('Missing required fields in generated topic');
+          }
+          if (type === 'reading_translation' && !parsed.sourceText) {
+            throw new Error('Missing sourceText for reading topic');
+          }
+
+          console.log(`✅ Gemini (${modelName}): Generated topic "${parsed.title}"`);
+          return {
+            ...parsed,
+            type,
+            level,
+            isAiGenerated: true,
+            vocabularyHints: Array.isArray(parsed.vocabularyHints) ? parsed.vocabularyHints : [],
+            targetWordCount: parsed.targetWordCount || (type === 'reading_translation' ? 100 : 150)
+          };
+        } catch (error) {
+          console.warn(`⚠️ Gemini topic generation (${modelName}) failed:`, error.message);
+        }
+      }
+    } else {
+      console.warn('ℹ️ Gemini not configured — using fallback topic.');
+    }
+
+    // Deterministic fallback topics
+    return this.getFallbackTopic(type, level);
+  },
+
+  getFallbackTopic(type, level) {
+    if (type === 'reading_translation') {
+      return {
+        title: 'Life in a Modern City',
+        sourceText: 'Modern cities are exciting places to live and work. They offer many opportunities for education, career development, and entertainment. However, city life also has its challenges. Traffic jams, pollution, and high costs of living are common problems that urban residents face every day. Despite these difficulties, millions of people continue to move to cities in search of a better future.',
+        instructions: 'Dịch đoạn văn sau sang tiếng Việt một cách tự nhiên và chính xác nhất.',
+        referenceTranslation: 'Các thành phố hiện đại là những nơi thú vị để sinh sống và làm việc. Chúng mang lại nhiều cơ hội cho giáo dục, phát triển nghề nghiệp và giải trí. Tuy nhiên, cuộc sống đô thị cũng có những thách thức riêng. Tắc đường, ô nhiễm và chi phí sinh hoạt cao là những vấn đề phổ biến mà cư dân thành thị phải đối mặt hàng ngày. Bất chấp những khó khăn đó, hàng triệu người vẫn tiếp tục đổ về các thành phố để tìm kiếm một tương lai tươi sáng hơn.',
+        vocabularyHints: [
+          { word: 'opportunities', meaning: 'cơ hội', example: 'There are many opportunities in the city.' },
+          { word: 'urban residents', meaning: 'cư dân thành thị', example: 'Urban residents face many challenges.' },
+          { word: 'despite', meaning: 'bất chấp, dù', example: 'Despite the problems, people still come.' }
+        ],
+        targetWordCount: 100,
+        type,
+        level,
+        isAiGenerated: false
+      };
+    }
+    return {
+      title: 'My Ideal Weekend',
+      instructions: `Viết một đoạn văn ${level === 'A2' ? '(60-100 từ)' : level === 'B1' ? '(120-180 từ)' : '(200-250 từ)'} bằng tiếng Anh mô tả buổi cuối tuần lý tưởng của bạn. Nêu rõ bạn muốn làm gì, ở đâu, với ai và tại sao điều đó quan trọng với bạn.`,
+      vocabularyHints: [
+        { word: 'leisure', meaning: 'thời gian rảnh rỗi', example: 'I enjoy leisure activities on weekends.' },
+        { word: 'refresh', meaning: 'làm mới, hồi phục', example: 'A good rest helps me refresh.' },
+        { word: 'worthwhile', meaning: 'xứng đáng, có giá trị', example: 'Spending time with family is worthwhile.' }
+      ],
+      targetWordCount: level === 'A2' ? 80 : level === 'B1' ? 150 : 220,
+      type,
+      level,
+      isAiGenerated: false
+    };
   }
 };
+

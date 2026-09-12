@@ -11,7 +11,8 @@ import {
   LogOut,
   LayoutDashboard,
   Compass,
-  GraduationCap
+  GraduationCap,
+  PenLine
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -32,7 +33,8 @@ export default function Header() {
     ? [
         { to: '/dashboard', label: t('navDashboard'), icon: LayoutDashboard, color: 'text-indigo-400' },
         { to: '/learning-path', label: 'Lộ trình AI', icon: Compass, color: 'text-violet-400' },
-        { to: '/courses', label: 'Khóa học', icon: BookOpen, color: 'text-emerald-400' }
+        { to: '/courses', label: 'Khóa học', icon: BookOpen, color: 'text-emerald-400' },
+        { to: '/practice', label: 'Luyện Viết & Dịch', icon: PenLine, color: 'text-sky-400' }
       ]
     : [
         { to: '/#architecture', label: t('navArchitecture'), icon: Layers, color: 'text-indigo-400' },
