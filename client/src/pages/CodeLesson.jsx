@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { codeChallengeService } from '../services/codeChallengeService.js';
-import { courseService } from '../services/courseService.js';
+import { apiRequest } from '../services/api.js';
 import Header from '../components/Header.jsx';
 import PageTransition from '../components/PageTransition.jsx';
 import { Badge } from '../components/ui/badge.jsx';
@@ -253,10 +253,7 @@ export default function CodeLesson() {
   // Fetch lesson with module/course context
   const { data: lessonData, isLoading: lessonLoading } = useQuery({
     queryKey: ['lesson', lessonId],
-    queryFn: async () => {
-      const { apiRequest } = await import('../services/api.js');
-      return apiRequest(`/api/lessons/${lessonId}`);
-    }
+    queryFn: () => apiRequest(`/api/lessons/${lessonId}`)
   });
 
   // Fetch challenges for lesson
