@@ -11,6 +11,8 @@ import Courses from './pages/Courses.jsx';
 import CourseDetail from './pages/CourseDetail.jsx';
 import LessonView from './pages/LessonView.jsx';
 import PracticeHub from './pages/PracticeHub.jsx';
+import CodeLesson from './pages/CodeLesson.jsx';
+import CodingRoadmap from './pages/CodingRoadmap.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 export default function App() {
@@ -81,6 +83,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <PracticeHub />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/code-lessons/:id"
+          element={
+            <ProtectedRoute>
+              <CodeLesson />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/coding-roadmap/:courseId"
+          element={
+            <ProtectedRoute>
+              <CodingRoadmap />
             </ProtectedRoute>
           }
         />

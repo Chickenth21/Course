@@ -11,6 +11,8 @@ import exerciseRouter from './routes/exercise.route.js';
 import learningPathRouter from './routes/learningPath.route.js';
 import logRouter from './routes/log.route.js';
 import practiceRouter from './routes/practice.route.js';
+import codeChallengeRouter from './routes/codeChallenge.route.js';
+import codingRoadmapRouter from './routes/codingRoadmap.route.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 
 const app = express();
@@ -36,6 +38,8 @@ app.use('/api/exercises', exerciseRouter);
 app.use('/api/learning-path', learningPathRouter);
 app.use('/api/logs', logRouter);
 app.use('/api/practice', practiceRouter);
+app.use('/api/code-challenges', codeChallengeRouter);
+app.use('/api/coding-roadmap', codingRoadmapRouter);
 
 // 404 Handler
 app.use('*', (_req, res) => {

@@ -8,6 +8,14 @@ import {
   fallbackTranslationResult,
   fallbackWritingResult
 } from './schemas/evaluation.schema.js';
+import { buildCodeGraderPrompt } from './prompts/codeGrader.prompt.js';
+import { buildCodingRoadmapPrompt } from './prompts/codingRoadmap.prompt.js';
+import {
+  codeGraderSchema,
+  codingRoadmapResponseSchema,
+  fallbackCodeGradeResult,
+  fallbackCodingRoadmap
+} from './schemas/codeGrader.schema.js';
 
 export const aiService = {
   /**
@@ -302,6 +310,93 @@ export const aiService = {
       type,
       level,
       isAiGenerated: false
+    };
+  },
+
+  /**
+   * Grade a code submission using Gemini AI.
+   * Returns score 0-100, isPassed, feedback, strengths, improvements.
+   * Falls back to a deterministic result if Gemini is unavailable.
+   */
+  async gradeCode({ title, description, userCode, starterCode, testCases, concepts, language, solutionCode }) {
+    if (ai) {
+      const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+      for (const modelName of modelsToTry) {
+        try {
+          const prompt = buildCodeGraderPrompt({ title, description, userCode, starterCode, testCases, concepts, language, solutionCode });
+          console.log(`🤖 Gemini (${modelName}): Grading code submission...`);
+
+          const response = await ai.models.generateContent({
+            model: modelName,
+            contents: prompt,
+            config: { responseMimeType: 'application/json' }
+          });
+
+          const rawText = response.text || '';
+          const jsonText = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          const parsedJson = JSON.parse(jsonText);
+          const validated = codeGraderSchema.parse(parsedJson);
+          console.log(`✅ Gemini (${modelName}): Code graded — score ${validated.score}, passed: ${validated.isPassed}`);
+          return { ...validated, isAiGraded: true };
+        } catch (error) {
+          console.warn(`⚠️ Gemini code grading (${modelName}) failed:`, error.message);
+        }
+      }
+    } else {
+      console.warn('ℹ️ Gemini not configured — using fallback for code grading.');
+    }
+
+    return { ...fallbackCodeGradeResult, isAiGraded: false };
+  },
+
+  /**
+   * Generate a personalized coding roadmap using Gemini AI.
+   * Falls back to a linear roadmap ordering all course modules.
+   */
+  async generateCodingRoadmap({ goal, skillLevel, courseTitle, courseModules }) {
+    if (ai) {
+      const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+      for (const modelName of modelsToTry) {
+        try {
+          const prompt = buildCodingRoadmapPrompt({ goal, skillLevel, courseTitle, courseModules });
+          console.log(`🤖 Gemini (${modelName}): Generating coding roadmap...`);
+
+          const response = await ai.models.generateContent({
+            model: modelName,
+            contents: prompt,
+            config: { responseMimeType: 'application/json' }
+          });
+
+          const rawText = response.text || '';
+          const jsonText = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          const parsedJson = JSON.parse(jsonText);
+          const validated = codingRoadmapResponseSchema.parse(parsedJson);
+          console.log(`✅ Gemini (${modelName}): Roadmap generated with ${validated.steps.length} steps.`);
+          return validated;
+        } catch (error) {
+          console.warn(`⚠️ Gemini coding roadmap (${modelName}) failed:`, error.message);
+        }
+      }
+    } else {
+      console.warn('ℹ️ Gemini not configured — using fallback for coding roadmap.');
+    }
+
+    // Deterministic fallback: create steps from all available lessons
+    const allLessons = courseModules.flatMap((mod, mIdx) =>
+      (mod.lessons || []).map((lesson, lIdx) => ({
+        order_index: mIdx * 10 + lIdx + 1,
+        topic: lesson.title,
+        description: lesson.description || mod.description || '',
+        lesson_id: lesson.id,
+        concepts: [],
+        priority: lIdx === 0 ? 'high' : 'normal',
+        reason: `Bài học từ module: ${mod.title}`
+      }))
+    );
+
+    return {
+      ...fallbackCodingRoadmap,
+      steps: allLessons.length > 0 ? allLessons : fallbackCodingRoadmap.steps
     };
   }
 };

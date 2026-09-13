@@ -17,7 +17,9 @@ import {
   ChevronLeft,
   ArrowRight,
   Sparkles,
-  GraduationCap
+  GraduationCap,
+  Map,
+  Code2
 } from 'lucide-react';
 
 export default function CourseDetail() {
@@ -31,6 +33,7 @@ export default function CourseDetail() {
 
   const course = courseData?.data;
   const modules = course?.modules || [];
+  const isCodingCourse = course?.category === 'coding';
 
   if (isLoading) {
     return (
@@ -108,21 +111,41 @@ export default function CourseDetail() {
               </span>
               <span className="flex items-center gap-1.5 font-medium">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Khung chuẩn quốc tế CEFR</span>
+                <span>{isCodingCourse ? 'Thực hành code thực tế' : 'Khung chuẩn quốc tế CEFR'}</span>
               </span>
             </div>
 
-            {modules[0]?.lessons?.[0] && (
-              <Link to={`/lessons/${modules[0].lessons[0].id}`}>
-                <Button
-                  size="lg"
-                  className="h-11 px-6 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm shadow-md shadow-amber-500/10 transition-all flex items-center gap-2 cursor-pointer active:scale-95"
-                >
-                  <span>Bắt Đầu Bài Đầu Tiên</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-              </Link>
-            )}
+            <div className="flex items-center gap-2">
+              {/* AI Roadmap button for coding courses */}
+              {isCodingCourse && (
+                <Link to={`/coding-roadmap/${course.id}`}>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="h-11 px-5 rounded-xl border-indigo-600/50 text-indigo-400 hover:bg-indigo-950/40 font-bold text-xs sm:text-sm flex items-center gap-2 cursor-pointer active:scale-95"
+                  >
+                    <Map className="w-4 h-4" />
+                    <span>Lộ Trình AI</span>
+                    <Sparkles className="w-3.5 h-3.5" />
+                  </Button>
+                </Link>
+              )}
+
+              {modules[0]?.lessons?.[0] && (
+                <Link to={isCodingCourse
+                  ? `/code-lessons/${modules[0].lessons[0].id}`
+                  : `/lessons/${modules[0].lessons[0].id}`
+                }>
+                  <Button
+                    size="lg"
+                    className="h-11 px-6 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm shadow-md shadow-amber-500/10 transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                  >
+                    <span>Bắt Đầu Bài Đầu Tiên</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
         </section>
 
@@ -160,7 +183,7 @@ export default function CourseDetail() {
                   {module.lessons?.map((lesson, lIdx) => (
                     <Link
                       key={lesson.id || lIdx}
-                      to={`/lessons/${lesson.id}`}
+                      to={isCodingCourse ? `/code-lessons/${lesson.id}` : `/lessons/${lesson.id}`}
                       className="group flex items-center justify-between p-4 rounded-xl border border-slate-800/80 bg-slate-900/60 hover:bg-slate-800/80 hover:border-amber-500/40 transition-all duration-200 cursor-pointer"
                     >
                       <div className="flex items-center gap-4">
